@@ -81,19 +81,26 @@
 
             // QRコード検出
             const scanner = new Instascan.Scanner({ video: video });
-            scanner.addListener('scan', function (content) {
-                const url = `${window.location.origin}${content}`;
+			scanner.addListener('scan', function (content) {
+    		url = `${window.location.origin}${content}`;
 
-                // 同じQRコードがすでにスキャンされているか確認
-                if (!scannedURLs.has(url)) {
-                    scannedURLs.add(url);
+    		// 同じQRコードがすでにスキャンされているか確認
+    		if (!scannedURLs.has(url)) {
+        		scannedURLs.add(url);
 
-                    // 新しい<p>要素を作成してresultDivに追加
-                    const newParagraph = document.createElement('p');
-                    newParagraph.innerHTML = `Scanned URL: <a href="${url}" onclick="navigateToUrl('${url}')">${url}</a>`;
-                    resultDiv.appendChild(newParagraph);
-                }
-            });
+        		// contentが 'buyitem/' で始まる場合には 'buyitem/' を除いた部分に遷移する
+        		if (content.startsWith('buyitem/')) {
+            	const itemId = content.substring('buyitem/'.length); // 'buyitem/' を取り除く
+            	url = `${window.location.origin}/userhome/buyitem/${itemId}`;
+            	navigateToUrl(url);
+        		}
+
+        	// 新しい<p>要素を作成してresultDivに追加
+        	const newParagraph = document.createElement('p');
+        	newParagraph.innerHTML = `Scanned URL: <a href="${url}" onclick="navigateToUrl('${url}')">${url}</a>`;
+        	resultDiv.appendChild(newParagraph);
+    		}
+		});
 
             Instascan.Camera.getCameras()
                 .then(function (cameras) {

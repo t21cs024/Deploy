@@ -7,8 +7,9 @@ from django.urls import reverse
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
-from django.urls.base import reverse_lazy 
-from .forms import UserIdForm,ItemBuy,MonthForm,CountForm,ImageUploadForm
+from django.urls.base import reverse_lazy
+from .forms import UserIdForm,ItemBuy,MonthForm,CountForm,ImageUploadForm,RetireDateForm
+from datetime import datetime
 
 #CSV関連
 import csv
@@ -70,7 +71,7 @@ class OrderEditView(TemplateView):
     
 class NewItemView(CreateView):
     model = Item
-    fields = ('name', 'item_url', 'count', 'price', 'state')
+    fields = ('name', 'count', 'price', 'state')
     template_name = "Edit/Item/newitem.html"
     success_url = '/superuserhome/orderedit'
 
@@ -87,68 +88,44 @@ class NewItemView(CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields['name'].label = '商品名' 
-        form.fields['item_url'].label = '画像URL'
         form.fields['count'].label = '在庫数'
         form.fields['price'].label = '単価'
         form.fields['state'].label = '状態'
         return form
+         
     
-"""
-class SignUpView(TemplateView):
-    model = User
-    fields = ('emp_num', 'name','user_menu', 'user_pass', 'user_mail','user_authority')
-    template_name = "Edit/signup.html"
-    success_url=reverse_lazy('superuserhome')
-    def get(self, request, *args, **kwargs):
-        form = SignUpForm()  # YourFormは適切なフォームのクラスに置き換えてください
-        return render(request, self.template_name, {'form': form})
-    def post(self, request, *args, **kwargs):
-        form = SignUpForm(request.POST)  # YourFormは適切なフォームのクラスに置き換えてください
-        if form.is_valid():
-            # フォームのデータを使って新しいUserオブジェクトを作成
-            new_user = User(
-                emp_num=form.cleaned_data['id'],
-                name=form.cleaned_data['full_name'],
-                user_pass=form.cleaned_data['password'],
-                user_mail=form.cleaned_data['email'],
-                def post(self, request, *args, **kwargs):
-                user_authority=form.cleaned_data['authority'],
-                # 他のフィールドも適切に追加
-            )
-            new_user.save()  # データベースに保存
-            return redirect('superuserhome:useredit')  # 成功したら指定のURLにリダイレクト
-            
-        # フォームが無効な場合は再度入力を促す
-        return render(request, self.template_name, {'form': form})
-"""        
-    
-
 class UserInformationView(TemplateView):
-    model = CustomUser
     template_name = "Edit/userinformation.html"
-    
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data()
-        # エラーメッセージを取得
-        error_message = messages.get_messages(request)
-        context['error_message'] = error_message
-        return self.render_to_response(context)
-
-    def post(self, request, *args, **kwargs):
-        emp_num = self.request.POST.get('emp_num')
-        # 該当するユーザが見つからない場合は再度入力を促す
-        try:
-            CustomUser.objects.get(emp_num=emp_num)
-        except (CustomUser.DoesNotExist):
-            messages.error(request, '該当するユーザが見つかりませんでした。再度入力してください。', extra_tags='nouser-error')
-            return redirect('superuserhome:userinformation')
-
-        return HttpResponseRedirect(reverse('superuserhome:userinformation_detail', kwargs={'emp_num': emp_num}))
-    
+        
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form_id'] = UserIdForm()
+        # エラーメッセージを取得
+        error_message = messages.get_messages(self.request)
+        context['error_message'] = error_message
+        # 社員番号で昇順にソートしたデータをセット
+        context['object_list'] = CustomUser.objects.order_by('emp_num')
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = UserIdForm(request.POST)
+        if form.is_valid():
+            emp_num = form.cleaned_data['emp_num']
+
+            # ユーザーが存在するか確認
+            try:
+                CustomUser.objects.get(emp_num=emp_num)
+            except CustomUser.DoesNotExist:
+                messages.error(request, '該当するユーザが見つかりませんでした。再度入力してください。', extra_tags='nouser-error')
+                return render(request, self.template_name, {'form_id': form, 'error_message': messages.get_messages(request), 'object_list': CustomUser.objects.order_by('emp_num')})
+
+            # フォームが正常に処理された場合
+            return redirect('superuserhome:userinformation_detail', emp_num=emp_num)
+
+        # フォームが不正な場合は再度表示
+        context = self.get_context_data()
+        context['form_id'] = form
+        return render(request, self.template_name, context)
     
     
 class UserInformationDetailView(TemplateView):
@@ -524,7 +501,7 @@ class ImageUploadView(CreateView):
 
 class ItemEditView(UpdateView):
     model = Item
-    fields = ('name','item_url','count' ,'price','state')
+    fields = ('name','count' ,'price','state')
     template_name = "Edit/Item/olditem_edit.html"
     success_url = reverse_lazy('superuserhome:olditem')
 
@@ -532,7 +509,6 @@ class ItemEditView(UpdateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         form.fields['name'].label = '商品名' 
-        form.fields['item_url'].label = '画像URL'
         form.fields['count'].label = '在庫数'
         form.fields['price'].label = '単価'
         form.fields['state'].label = '状態'
@@ -544,6 +520,45 @@ class ItemDeleteView(DeleteView):
     template_name = "Edit/Item/olditem_delete.html"
     success_url = reverse_lazy('superuserhome:olditem')
 
+
+class UserDeleteView(TemplateView):
+    template_name = "Edit/user_delete.html"
+    model = CustomUser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_id'] = UserIdForm()
+        context['form_date'] = RetireDateForm()
+        return context
+
+    def get(self, request, *args, **kwargs):
+        emp_num = self.kwargs.get('emp_num')
+        user = get_object_or_404(CustomUser, emp_num=emp_num)
+        context = self.get_context_data()
+        context['user'] = user
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        emp_num = self.kwargs.get('emp_num')
+        retire_date = self.request.POST.get('retire_date')
+        try:
+            datetime.strptime(str(retire_date), '%Y-%m-%d')
+        except ValueError:
+            messages.error(request, 'YYYY-MM-DDの形式で入力してください．', extra_tags='format-error')
+            return redirect('superuserhome:userdelete', emp_num=emp_num)
+
+        # 未来の日付が入力された場合のリダイレクト
+        if datetime.strptime(str(retire_date), '%Y-%m-%d').date() > date.today():
+            messages.error(request, '有効な日付を入力してください', extra_tags='format-error')
+            return redirect('superuserhome:userdelete', emp_num=emp_num)
+
+        user = get_object_or_404(CustomUser, emp_num=emp_num)
+        # 退職日を記入
+        user.retire_date = retire_date
+        # ログイン不可にする
+        user.is_active = False
+        user.save()
+        return HttpResponseRedirect(reverse('superuserhome:userinformation'))
 
 class QrCodeView(TemplateView):
     model = Item

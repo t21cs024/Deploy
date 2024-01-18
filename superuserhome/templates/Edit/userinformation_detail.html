@@ -37,6 +37,12 @@
 </nav>
 
 
+{% if user.is_active == True %} 
+<div class="right-align">
+    <a href="{% url 'superuserhome:userdelete' emp_num=user.emp_num %}"><button class="btn btn-danger" type="button">退職社員として登録</button></a>
+</div>
+{% endif %}
+
 
 {% if user %}
 	<table class="show-table">
@@ -54,6 +60,9 @@
         </td></tr>
 		<tr><th>メールアドレス</th>
 			<td>{{ user.email }}</td></tr>	
+		{% if user.is_active == False %}
+		<tr><th></th><td><font color='red'>退職済み</font> {% endif %}</td>
+   </tr>
 	</table>
 
 {% endif %}

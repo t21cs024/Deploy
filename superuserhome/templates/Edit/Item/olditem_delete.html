@@ -47,7 +47,6 @@
     <tr>
       <th>ID</th>
       <th>商品名</th>
-      <th>画像URL</th>
       <th>在庫数</th>
       <th>単価</th>
       <th>状態</th>
@@ -57,12 +56,12 @@
 <tr>
       <td scope="row">{{ item.id }}</td>
       <td>{{ item.name }}</td>
-      <td>{{ item.item_url }}</td>
       <td>{{ item.count }}</td>
       <td>{{ item.price }}</td>
-      <td>{% if item.state == 'sold out' %} <span style="color: red;">売り切れ</span> {% endif %}
-        {% if item.state == 'ordered' %} <span style="color: orange;">発注済み</span> {% endif %}
-        {% if item.state == 'in stock' %}在庫あり{% endif %}</td>
+      <td>{% if item.state == 0 %} <span style="color: red;">購入可能</span> {% endif %}
+        {% if item.state == 1 %} <span style="color: orange;">売り切れ</span> {% endif %}
+        {% if item.state == 2 %}非買商品{% endif %}
+        {% if item.state == 3 %}廃棄{% endif %}</td>
       </tr>
   </tbody>
 </table>

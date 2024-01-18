@@ -1,11 +1,77 @@
 {% extends 'base.html' %}
 
-{% block content %}
-    <h1>{{ success_message }}</h1>
-    <form method="post">
+{% block title %} カートに追加する {% endblock %}
+
+{% block main %}
+
+<style>
+.item-details{
+
+
+}
+
+.dt{
+	font-weight: bold;
+}
+
+.form {
+    width: 300px;
+    margin: 0 auto;
+}
+</style>
+
+
+<body>
+<nav class="navbar navbar-expand-xl navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'superuserhome:orderedit' %}">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+  		<path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+	</svg>
+</a>
+     <ul class="navbar-nav m-auto">
+      	<li class="nav-item">
+          <a class="navbar-brand"href="{% url 'superuserhome:home' %}">AutoOrder</a>
+        </li>
+      </ul>
+         <ul class="navbar-nav mt-auto">
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'login:logout' %}">ログアウト
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+  			<path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+  			<path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+		　</svg></a>
+        </li>
+      </ul>
+    </div>
+</nav>
+
+
+    <div class="contact-form">
+    <form action="{% url 'userhome:addtocart' item.id %}" method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">カートに追加</button>
+        <table class="table">
+          <thead class="table-dark">
+            {% if item %}
+    			<div class="item-details">
+        			<img src="../../../../../media/img/{{ item.id }}.png" alt="Image {{ item.id }}">
+        			<dt>商品名:</dt>
+    				<dd>{{ item.name }}</dd>
+    				<dt>価格:</dt>
+    				<dd>{{ item.price }}<a>円</a></dd>
+    			</div>
+			{% endif %}
+			{{ form.as_table }}
+		  </thead>
+        </table>
+        <div class="btn-side">
+            <a href="{% url 'userhome:buyitem' %}">
+                <button class="btn btn-outline-secondary w-150px" type="button">戻る</button>
+            </a>
+           	<input type="submit" class="btn btn-success w-200px" value="カートに入れる">
+        </div>
     </form>
-    <a href="{% url 'userhome:buyitem' %}">戻る</a>
+</div>
+
+</body>
 {% endblock %}
