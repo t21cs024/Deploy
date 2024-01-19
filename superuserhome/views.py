@@ -221,6 +221,11 @@ class OrderConfirmedView(TemplateView):
     def get(self, request):
         # ログインしているユーザを取得
         user = self.request.user
+        try:
+            Cart.objects.get(user=user)
+        except Cart.DoesNotExist:
+            # Cartがないならリダイレクト
+            return redirect('userhome:cartcontents')
         # ユーザからカートを取得
         cart = get_object_or_404(Cart, user=user)
         # カートからCartItemの取得
