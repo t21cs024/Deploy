@@ -6,7 +6,7 @@ Created on 2023/12/08
 from django.urls import path
 from .views import UserHomeView ,CameraView ,BuyHistoryView ,change_password, CartContentsView,AddToCartView
 from superuserhome.views import OrderConfirmedView
-from userhome.views import AddToCartView
+
 '''
 from .views import ItemList, ItemAddView, ItemShowView, ItemEditView, ItemDeleteView
 '''

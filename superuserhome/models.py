@@ -28,6 +28,7 @@ class Item(models.Model):
         ('in stock', '在庫あり'),
         ('sold out', '売り切れ'),
         ('ordered', '発注済み'),
+        ('2', '非買商品'),
     ]
     state = models.CharField(max_length=10, choices=STATE_CHOICES, default='in stock')
 

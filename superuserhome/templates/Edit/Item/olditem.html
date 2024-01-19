@@ -69,7 +69,8 @@
       <dl>単価　　{{ item.price }}</dl>
       <dl>状態　　{% if item.state == 'sold out' %} <font color='red'>売り切れ</font> {% endif %}
         {% if item.state == 'ordered' %} <font color='orange'> 発注済み</font> {% endif %}
-        {% if item.state == 'in stock' %} 在庫あり {% endif %}</dl>
+        {% if item.state == 'in stock' %} 在庫あり {% endif %}
+        {% if item.state == '2' %}<span style="color: purple;">非買商品</span>{% endif %}</dl>
 
 <div class="btn-toolbar " role="toolbar" aria-label="Toolbar with button groups">
   <div class="btn-group me-2" role="group" aria-label="First group">
@@ -82,7 +83,7 @@
         </div>
   <div class="btn-group" role="group" aria-label="Third group">
 	  <a class="btn btn-danger" href="{% url 'superuserhome:imagedelete' image_title=item.id %}" role="button">画像削除</a>
-	  <a class="btn btn-danger" href="{% url 'superuserhome:itemdelete' pk=item.id %}" role="button">商品を隠す</a>
+	  {%if item.state != '2'%}<a class="btn btn-danger" href="{% url 'superuserhome:itemdelete' pk=item.id %}" role="button">非買登録</a>{% endif %}
 </div>
     </tr>
   {% endfor %}
