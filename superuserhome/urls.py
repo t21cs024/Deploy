@@ -4,7 +4,7 @@ Created on 2023/12/12
 @author: t21cs011
 '''
 from django.urls import path
-from .views import QrCodeView,ImageUploadView,SuperUserHomeView ,UserEditView, OrderEditView, OldItemView, NewItemView, UserInformationView, UserInformationDetailView, TestView, PreDeductionOutputView, DeductionOutputView, CompanyManagementView, CompanyAddView, CompanyEditView, CompanyDeleteView, ItemDiscardView, ItemStockEditView, ItemInventoryControlView,ItemEditView,ItemDeleteView,UserDeleteView
+from .views import QrCodeView,ImageUploadView,SuperUserHomeView ,UserEditView, OrderEditView, OldItemView, NewItemView, UserInformationView, UserInformationDetailView, TestView, PreDeductionOutputView, DeductionOutputView, CompanyManagementView, CompanyAddView, CompanyEditView, CompanyDeleteView, ItemDiscardView, ItemStockEditView, ItemInventoryControlView,ItemEditView,ItemDeleteView,UserDeleteView, ItemHalfView
 from login.views import SignUpView
 from . import views
 
@@ -29,6 +29,7 @@ urlpatterns = [
     path('orderedit/olditem/itemaddstock/<int:item_id>/', ItemInventoryControlView.as_view(), name='itemdiscard'),
     path('orderedit/olditem/itemedit/<int:pk>/', ItemEditView.as_view(), name='itemedit'),
     path('orderedit/olditem/itemdelete/<int:pk>/', ItemDeleteView.as_view(), name='itemdelete'),
+    path('orderedit/olditem/itemhalf/<int:item_id>/', ItemHalfView.as_view(), name='itemhalf'),
     path('orderedit/olditem/imagedelete/<int:image_title>/', views.delete_image, name='imagedelete'),
     path('companymanage/', CompanyManagementView.as_view(), name='companymanage'),
     path('companymanage/companyadd/', CompanyAddView.as_view(), name='companyadd'),

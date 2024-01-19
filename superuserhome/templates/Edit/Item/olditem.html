@@ -79,6 +79,7 @@
   <div class="btn-group me-2" role="group" aria-label="Second group">
   	  <a class="btn btn-outline-secondary" href="{% url 'superuserhome:stockedit' item_id=item.id %}" role="button">在庫追加</a>
   	  <a class="btn btn-outline-secondary" href="{% url 'superuserhome:discardedit' item_id=item.id %}" role="button">廃棄</a>
+  	  {% if item.ishalf == False %}<a class="btn btn-outline-secondary" href="{% url 'superuserhome:itemhalf' item_id=item.id %}" role="button">半額設定</a>{% endif %}
   	  <a class="btn btn-outline-secondary" href="{% url 'superuserhome:itemedit' pk=item.id %}" role="button">編集</a>
         </div>
   <div class="btn-group" role="group" aria-label="Third group">

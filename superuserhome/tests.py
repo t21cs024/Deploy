@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from datetime import date
 
-from .models import User, Item, Order, PurchaseHistory, ImageUpload, Company
+from .models import Item, Order, PurchaseHistory, ImageUpload, Company
+from login.models import CustomUser as User
 
 from django.urls import reverse
 from django.test import Client
