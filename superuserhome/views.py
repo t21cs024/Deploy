@@ -221,6 +221,11 @@ class OrderConfirmedView(TemplateView):
     def get(self, request):
         # ログインしているユーザを取得
         user = self.request.user
+        try:
+            Cart.objects.get(user=user)
+        except Cart.DoesNotExist:
+            # Cartがないならリダイレクト
+            return redirect('userhome:cartcontents')
         # ユーザからカートを取得
         cart = get_object_or_404(Cart, user=user)
         # カートからCartItemの取得
@@ -249,7 +254,7 @@ class OrderConfirmedView(TemplateView):
             for item in items_out_of_stock:
                 item.state = 'sold out'
                 item.save()
-        return redirect('userhome:buyitem')
+        return redirect('userhome:home')
     
     def increase_weight(self, request, items_out_of_stock):
         for item in items_out_of_stock:

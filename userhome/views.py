@@ -97,7 +97,7 @@ class AddToCartView(View):
         item_id = kwargs.get('item_id')
         item = get_object_or_404(SuperuserItem, pk=item_id)
 
-        form = ItemBuy(initial={'item_id': item.id, 'item_status': item.state, 'quantity': 1})
+        form = ItemBuy(initial={'item_id': item.id,  'quantity': 1})
 
         return render(request, self.template_name, {'item': item, 'form': form})
 
@@ -111,6 +111,7 @@ class AddToCartView(View):
 
             if not item_created:
                 cart_item.quantity += form.cleaned_data['quantity']
+                cart_item.total = item.price * cart_item.quantity
                 cart_item.save()
 
             return redirect(self.success_url)
