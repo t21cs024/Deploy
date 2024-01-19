@@ -1,5 +1,4 @@
 from django.views.generic import ListView
-#from .models import User,Item,Cart,CartItem
 from .models import Cart,CartItem
 from superuserhome.models import Item as SuperuserItem
 from django.views.generic.base import TemplateView,View
@@ -91,8 +90,8 @@ class AddToCartView(View):
         if form.is_valid():
             item_id = form.cleaned_data['item_id']
             item = get_object_or_404(SuperuserItem, pk=item_id)
-            cart, created = Cart.objects.get_or_create(user=self.request.user)
-            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, item=item)
+            cart = Cart.objects.get_or_create(user=self.request.user)
+            cart_item= CartItem.objects.get_or_create(cart=cart, item=item)
             cart_item.total = item.price * cart_item.quantity
             if item.count < form.cleaned_data['count']:
                 cart_item.quantity = item.count
