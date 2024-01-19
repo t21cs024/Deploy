@@ -58,21 +58,21 @@
       <td>{{ item.name }}</td>
       <td>{{ item.count }}</td>
       <td>{{ item.price }}</td>
-      <td>{% if item.state == 0 %} <span style="color: red;">購入可能</span> {% endif %}
-        {% if item.state == 1 %} <span style="color: orange;">売り切れ</span> {% endif %}
-        {% if item.state == 2 %}非買商品{% endif %}
-        {% if item.state == 3 %}廃棄{% endif %}</td>
+      <td>{% if item.state == 'sold out' %} <span style="color: red;">売り切れ</span> {% endif %}
+        {% if item.state == 'ordered' %} <span style="color: orange;">発注済み</span> {% endif %}
+        {% if item.state == 'in stock' %}在庫あり{% endif %}
+        {% if item.state == '2' %}<span style="color: purple;">非買商品</span>{% endif %}</td>
       </tr>
   </tbody>
 </table>
 <br><br>
 <div class="message-box">
-<span class="mgr">上記の商品を削除しますか？</span>
+<span class="mgr">上記の商品を非買商品としてよろしいですか？</span>
 <div class="btn-side">
 <a href="{% url 'superuserhome:olditem' %}">
 <input class="btn btn-outline-secondary  w-100px h-35px" type="button" value="キャンセル">
 </a>
-<input class="btn btn-danger w-100px h-35px" type="submit" value="削除する">
+<input class="btn btn-danger w-100px h-35px" type="submit" value="確定">
 </div>
 </div>
 </form>

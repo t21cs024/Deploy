@@ -48,7 +48,8 @@
 		<tr><th>状態</th>
 			<td>{% if item.state == 'sold out' %} <span style="color: red;">売り切れ</span> {% endif %}
         {% if item.state == 'ordered' %} <span style="color: orange;">発注済み</span> {% endif %}
-        {% if item.state == 'in stock' %}在庫あり{% endif %}</td></tr>	
+        {% if item.state == 'in stock' %}在庫あり{% endif %}
+        {% if item.state == '2' %}<span style="color: purple;">非買商品</span>{% endif %}</td></tr>
 	</table>
 
 {% endif %}

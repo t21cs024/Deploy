@@ -1,5 +1,6 @@
 from .models import Item,PurchaseHistory,Company,Order,ImageUpload
 from login.models import CustomUser
+from userhome.models import Cart, CartItem
 from django.views.generic.base import TemplateView
 from django.http import HttpResponseRedirect
 from django.shortcuts import render,redirect
@@ -25,6 +26,8 @@ from decimal import Decimal
 from pip._vendor.typing_extensions import Self
 import qrcode
 import os
+from superuserhome.models import BuyHistory
+from more_itertools.recipes import quantify
 
 # Create your views here.  
 
@@ -216,13 +219,23 @@ class OrderConfirmedView(TemplateView):
     template_name = "Order/buy_item.html"  
     
     def get(self, request):
-        """
-        購入によって在庫数をデクリメントする処理をここに記述
-        （ stateの変更は下記で行うため不要です ）
-        """
+        # ログインしているユーザを取得
+        user = self.request.user
+        # ユーザからカートを取得
+        cart = get_object_or_404(Cart, user=user)
+        # カートからCartItemの取得
+        cart_items = CartItem.objects.filter(cart=cart)
+        # 在庫のデクリメント処理
+        self.reduce_inv(cart_items)
+        # Purchase Historyの記入
+        self.deduction_add(cart_items)
+        # 購入履歴の登録
+        self.buyhistory_add(cart_items)
+        # 次回のためにカートを削除
+        cart.delete()
         # 在庫が重み付けによって決められた個数未満であり、発注メールを送信していないOrderオブジェクトを外部キーを通して取得
         items_below_amount = Order.objects.filter(item__count__lt=F('minimum_amount'), item__state = 'in stock')
-        # 在庫数0以下で，stateが"売り切れ"になっていない商品オブジェクトを取得
+        # 在庫数0以下で，stateが"売り切れ"または”非買”になっていない商品オブジェクトを取得
         items_out_of_stock = Item.objects.filter( Q(count__lte = 0) & (Q(state = 'in stock')|Q(state = 'ordered')) )
         # 条件に該当するオブジェクトが存在する場合、重み増加メソッド呼び出し
         if items_out_of_stock.exists():
@@ -339,7 +352,39 @@ class OrderConfirmedView(TemplateView):
         recipient_list = [
             supplier_company.company_mail
             ]
-        send_mail(subject, message, from_email, recipient_list)    
+        send_mail(subject, message, from_email, recipient_list) 
+
+    # 在庫を減らす処理
+    def reduce_inv(self, cart_items):
+        # 各 CartItem に対して処理を行う
+        for cart_item in cart_items:
+            # itemの取得
+            item = get_object_or_404(Item, pk=cart_item.item.id)
+            item.count -= cart_item.quantity
+            item.save()
+
+    # Purchase Historyの記入
+    def deduction_add(self, cart_items):
+        # ログインしているユーザを取得
+        user = self.request.user
+        # 今日の月を取り出す
+        today_month = datetime.now().month
+        history = get_object_or_404(PurchaseHistory, user = user, buy_month = today_month)
+        # 購入額の計算
+        for cart_item in cart_items:
+            # itemの取得
+            item = get_object_or_404(Item, pk=cart_item.item.id)
+            history.buy_amount += item.price * cart_item.quantity
+        history.save()        
+
+    def buyhistory_add(self,cart_items):
+        # ログインしているユーザを取得
+        user = self.request.user
+        for cart_item in cart_items:
+            # itemの取得
+            item = get_object_or_404(Item, pk=cart_item.item.id)
+            history = BuyHistory.objects.create(item=item, user=user, quantity = cart_item.quantity, price =cart_item.quantity* item.price, buy_date = date.today())
+            history.save()    
     
 class CompanyManagementView(ListView):
     model = Company
@@ -437,8 +482,8 @@ class ItemInventoryControlView(TemplateView):
         item.count += count
         # idを外部キーとしてOrderオブジェクトの取得 見つからない場合は404
         order = get_object_or_404(Order, pk=item.id)
-        # 在庫数が発注メールが送信される個数以上になった場合に状態を「在庫あり」に
-        if order.minimum_amount <= item.count:
+        # 非買になっていないかつ,商品在庫数が発注メールが送信される個数以上になった場合に状態を「在庫あり」に
+        if order.minimum_amount <= item.count and item.state != '2':
             item.state = 'in stock' 
         item.save()  
 
@@ -461,13 +506,13 @@ class ItemInventoryControlView(TemplateView):
                 # 条件に該当するオブジェクトが存在する場合、発注メール送信メソッド呼び出し
                 OrderConfirmedView().send_order_mail(request,items_below_amount)
             # 状態の上書き
-        if item.count == 0:
+        if item.count == 0 and item.state != '2':
             item.state = 'sold out'
             item.save()
 
     def decrease_weight(self, request, item, count):
-        # 在庫数が0の商品を破棄しても重みの更新は行わない
-        if item.count != 0:
+        # 在庫数が0or非買商品を破棄しても重みの更新は行わない
+        if item.count != 0 and item.state != '2':
             # idを外部キーとしてOrderオブジェクトの取得 見つからない場合は404
             order = get_object_or_404(Order, pk=item.id)
             # 廃棄個数から，重みを減らす値を決定する
@@ -515,10 +560,25 @@ class ItemEditView(UpdateView):
         return form
 
 
-class ItemDeleteView(DeleteView):
+class ItemDeleteView(TemplateView):
     model = Item
     template_name = "Edit/Item/olditem_delete.html"
-    success_url = reverse_lazy('superuserhome:olditem')
+
+    def get(self, request, *args, **kwargs):
+        item_id = self.kwargs.get('pk')
+        item = get_object_or_404(Item, pk=item_id)
+        context = self.get_context_data()
+        context['item'] = item
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        item_id = self.kwargs.get('pk')
+
+        item = get_object_or_404(Item, pk=item_id)
+        # 非買商品にする
+        item.state = '2'
+        item.save()
+        return HttpResponseRedirect(reverse('superuserhome:olditem'))
 
 
 class UserDeleteView(TemplateView):
