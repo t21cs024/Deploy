@@ -45,7 +45,7 @@ class SignUpView(CreateView):
 # ログインビューを作成
 class LoginView(BaseLoginView):
     form_class = LoginFrom
-    template_name = "login.html"
+    template_name = "login/login.html"
     
     def get_success_url(self):
         user = self.request.user

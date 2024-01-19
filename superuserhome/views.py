@@ -249,7 +249,7 @@ class OrderConfirmedView(TemplateView):
             for item in items_out_of_stock:
                 item.state = 'sold out'
                 item.save()
-        return redirect('userhome:buyitem')
+        return redirect('userhome:home')
     
     def increase_weight(self, request, items_out_of_stock):
         for item in items_out_of_stock:

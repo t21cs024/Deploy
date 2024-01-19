@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %} ログイン {% endblock %}
+
+{% block main %}
+
+<body>
+<br>
+<div class="parent">
+<div class="login-box">
+
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <ul>
+    <li>{{ field.label }}</li></ul>
+    {{ field }}<br><br>
+    {% endfor %}
+        <input class="btn btn-success w-100 h-40px" type="submit" value="ログイン"></div>
+    </form>
+</div>
+</body>
+{% endblock %}
