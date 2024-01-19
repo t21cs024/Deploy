@@ -30,6 +30,7 @@ class Item(models.Model):
         ('2', '非買商品'),
     ]
     state = models.CharField(max_length=10, choices=STATE_CHOICES, default='in stock')
+    ishalf = models.BooleanField(default = False)
 
     def __str__(self):
         return '{}({})'.format(self.name, self.get_state_display())

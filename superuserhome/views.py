@@ -36,8 +36,7 @@ def delete_image(request, image_title):
     image_upload_instance.img.delete()  # 画像ファイルを削除
     image_upload_instance.delete()      # データベースからオブジェクトを削除
     
-    #return redirect('superuserhome:olditem')  # 成功したら指定のURLにリダイレクト
-    return HttpResponse("Image deleted successfully.")
+    return redirect('superuserhome:olditem')  # 成功したら指定のURLにリダイレクト
 
 class SuperUserHomeView(TemplateView):
     model = CustomUser
@@ -548,7 +547,7 @@ class ImageUploadView(CreateView):
 
 class ItemEditView(UpdateView):
     model = Item
-    fields = ('name','count' ,'price','state')
+    fields = ('name','count' ,'price','state', 'ishalf')
     template_name = "Edit/Item/olditem_edit.html"
     success_url = reverse_lazy('superuserhome:olditem')
 
@@ -559,6 +558,7 @@ class ItemEditView(UpdateView):
         form.fields['count'].label = '在庫数'
         form.fields['price'].label = '単価'
         form.fields['state'].label = '状態'
+        form.fields['ishalf'].label = '半額'
         return form
 
 
@@ -643,5 +643,17 @@ class QrCodeView(TemplateView):
         img.save(response, format="PNG")
 
         return response
+    
+class ItemHalfView(TemplateView):
+    template_name = "Edit/Item/qrcode/qrcode.html"
+
+    def get(self, request, *args, **kwargs):
+        item_id = self.kwargs.get('item_id')
+        item = get_object_or_404(Item, pk=item_id)
+        if item.ishalf == False:
+            item.price = item.price/2
+            item.ishalf = True 
+        item.save()
+        return redirect('superuserhome:olditem')  # 成功したら指定のURLにリダイレクト
 
 
