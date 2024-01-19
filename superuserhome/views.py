@@ -23,11 +23,8 @@ from django.db.models import F, Q
 from datetime import timedelta, date
 from decimal import Decimal
 # test
-from pip._vendor.typing_extensions import Self
 import qrcode
-import os
 from superuserhome.models import BuyHistory
-from more_itertools.recipes import quantify
 
 # Create your views here.  
 

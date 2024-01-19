@@ -1,5 +1,4 @@
 from django.db import models
-from django.template.defaultfilters import default
 from django.core.validators import MinValueValidator, MaxValueValidator
 from login.models import CustomUser
 # Create your models here.

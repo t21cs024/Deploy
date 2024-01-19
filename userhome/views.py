@@ -1,32 +1,17 @@
 from django.views.generic import ListView
 #from .models import User,Item,Cart,CartItem
 from .models import Cart,CartItem
-from superuserhome.models import BuyHistory
 from superuserhome.models import Item as SuperuserItem
 from django.views.generic.base import TemplateView,View
 from django.shortcuts import render,redirect
-from django.urls import reverse
 from django.shortcuts import get_object_or_404
-from django.views.generic.edit import CreateView,UpdateView,DeleteView
-from django.urls.base import reverse_lazy
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth.views import PasswordChangeView
-from .forms import ItemIdForm,ItemForm,ItemBuy
+from .forms import ItemBuy
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from superuserhome.models import BuyHistory
-from django.http import StreamingHttpResponse
-from django.views.decorators import gzip
-from channels.generic.websocket import AsyncWebsocketConsumer
-import json
-import cv2
-import numpy as np
-import threading
-import time
-import websocket
 
 # Create your views here.
 
@@ -97,7 +82,7 @@ class AddToCartView(View):
         item_id = kwargs.get('item_id')
         item = get_object_or_404(SuperuserItem, pk=item_id)
 
-        form = ItemBuy(initial={'item_id': item.id,  'quantity': 1})
+        form = ItemBuy(initial={'item_id': item.id, 'item_status': item.state})
 
         return render(request, self.template_name, {'item': item, 'form': form})
 
@@ -108,11 +93,16 @@ class AddToCartView(View):
             item = get_object_or_404(SuperuserItem, pk=item_id)
             cart, created = Cart.objects.get_or_create(user=self.request.user)
             cart_item, item_created = CartItem.objects.get_or_create(cart=cart, item=item)
-
-            if not item_created:
-                cart_item.quantity += form.cleaned_data['quantity']
-                cart_item.total = item.price * cart_item.quantity
-                cart_item.save()
+            cart_item.total = item.price * cart_item.quantity
+            if item.count < form.cleaned_data['count']:
+                cart_item.quantity = item.count
+            else:
+                if cart_item.quantity+form.cleaned_data['count'] > item.count:
+                    cart_item.quantity = item.count
+                else:
+                    cart_item.quantity += form.cleaned_data['count'] 
+            cart_item.total = item.price * cart_item.quantity
+            cart_item.save()
 
             return redirect(self.success_url)
 

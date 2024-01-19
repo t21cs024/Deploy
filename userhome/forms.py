@@ -11,11 +11,12 @@ from django.shortcuts import get_object_or_404
 class ItemBuy(forms.Form):
     item_id = forms.IntegerField(widget=forms.HiddenInput())
     count = forms.IntegerField(label='購入個数', min_value=1)
-    # 他のフィールドの定義...
+    item_status = forms.CharField(widget=forms.HiddenInput())
+    
 
     class Meta:
         model = SuperuserItem
-        fields = ['item_id', 'price']
+        fields = ['item_id', 'item_status','price']
         widgets = {
             'item_id': forms.HiddenInput(),
             'price': forms.NumberInput(attrs={'readonly': True}),
@@ -29,10 +30,13 @@ class ItemBuy(forms.Form):
         item_id = self.initial.get('item_id', None)
         if item_id is not None:
             self.fields['item_id'].initial = item_id
-            
 
     def clean(self):
         cleaned_data = super().clean()
+        item_status = cleaned_data.get('item_status')
+        
+        if item_status == 'sold out' or item_status == '2':
+            raise ValidationError('購入可能な状態ではありません。')
         
         # item_id を取得して SuperuserItem を取得し、その price を cleaned_data に設定
         item_id = cleaned_data.get('item_id')
@@ -41,7 +45,6 @@ class ItemBuy(forms.Form):
             cleaned_data['price'] = item.price
 
         return cleaned_data
-
 
 class ItemIdForm(forms.Form):
     item_id = forms.IntegerField(label='ID')

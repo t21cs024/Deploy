@@ -1,29 +1,13 @@
 from django.test import TestCase
 import unittest
-from .models import User
 from .models import Item
 from .models import Cart
 from .models import CartItem
-from secretstorage import item
 from datetime import datetime
 from django.urls import reverse
 from django.test import Client
 
 # Create your tests here.
-class UserTests(TestCase):
-    def setUp(self):
-        # テストに使用するユーザーデータを準備する
-        self.test_user_data = {
-            'name': 'test_name',
-            'user_menu': 'test_user_menu',
-            # 他の必要なフィールドがあればここに追加
-        }
-
-    def test_user(self):
-        test_user = User(**self.test_user_data)
-        self.assertEqual(test_user.name, self.test_user_data['name'])
-        self.assertEqual(test_user.user_menu, self.test_user_data['user_menu'])
-
 class ItemTests(TestCase):
     def setUp(self):
         self.test_item_data = {
@@ -73,7 +57,7 @@ class TestCart(unittest.TestCase):
 
         # テストに使用するカートデータを準備する
         self.test_cart_data = {
-            'user': User(**self.test_user_data),
+
             'items': [self.test_item_data],  # アイテムデータをモデルのインスタンスに変更
         }
 
@@ -118,8 +102,7 @@ class CartItemTests(TestCase):
             'buy': False,
         }
 
-        # テストに使用するユーザーを作成
-        self.test_user = User.objects.create(**self.test_user_data)
+
 
         # テストに使用するカートを作成
         self.test_cart = Cart.objects.create(user=self.test_user)
