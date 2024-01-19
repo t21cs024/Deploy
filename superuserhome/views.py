@@ -384,7 +384,7 @@ class OrderConfirmedView(TemplateView):
             # itemの取得
             item = get_object_or_404(Item, pk=cart_item.item.id)
             history = BuyHistory.objects.create(item=item, user=user, quantity = cart_item.quantity, price =cart_item.quantity* item.price, buy_date = date.today())
-            history.save()    
+            history.save()   
     
 class CompanyManagementView(ListView):
     model = Company
