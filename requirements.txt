@@ -1,1 +1,6 @@
 qrcode==7.4.2
+typing-extensions
+django
+pytz
+asgiref
+sqlparse
