@@ -346,6 +346,8 @@ class OrderConfirmedView(TemplateView):
             "────────────────────────\n"
             )
 
+        message = message.replace('　', ' ')
+
         """送信元メールアドレス（企業DBから取得）"""
         from_email = own_company.company_mail
         
